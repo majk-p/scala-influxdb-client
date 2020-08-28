@@ -16,6 +16,13 @@ libraryDependencies += "io.spray" %%  "spray-json" % "1.3.5"
 libraryDependencies += "com.github.tomakehurst" % "wiremock" % "2.25.1" % "test"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % "test"
 libraryDependencies += "com.dimafeng" %% "testcontainers-scala" % "0.33.0" % "test"
+libraryDependencies += "com.softwaremill.sttp.client" %% "core" % "2.2.6"
+libraryDependencies += "org.typelevel" %% "cats-core" % "2.1.1"
+libraryDependencies += "org.typelevel" %% "cats-effect" % "2.1.4"
+libraryDependencies += "com.softwaremill.sttp.client" %% "okhttp-backend" % "2.2.6"
+
+scalacOptions += "-Ypartial-unification"
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 
 import ReleaseTransformations._
 

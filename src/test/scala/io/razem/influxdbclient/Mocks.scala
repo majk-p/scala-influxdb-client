@@ -4,7 +4,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object Mocks {
   class ExceptionThrowingHttpClient(host: String, port: Int)(implicit ec: ExecutionContext)
-      extends HttpClient(host, port) {
+      extends HttpClient[Future] {
+
+    override def close(): Future[Unit] = Future.unit
+
     override def post(url: String, params: Map[String, String] = Map(), content: String): Future[HttpResponse] =
       Future.failed(new HttpException(""))
 
@@ -13,7 +16,10 @@ object Mocks {
   }
 
   class ErrorReturningHttpClient(host: String, port: Int, errorCode: Int)(implicit ec: ExecutionContext)
-      extends HttpClient(host, port) {
+      extends HttpClient[Future] {
+
+    override def close(): Future[Unit] = Future.unit
+
     override def post(url: String, params: Map[String, String] = Map(), content: String): Future[HttpResponse] =
       Future.successful(new HttpResponse(errorCode, "Error message"))
 

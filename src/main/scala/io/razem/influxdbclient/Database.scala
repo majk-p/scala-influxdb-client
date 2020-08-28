@@ -6,7 +6,7 @@ import io.razem.influxdbclient.Parameter.Precision.Precision
 import scala.concurrent.{ExecutionContext, Future}
 
 class Database protected[influxdbclient]
-(val databaseName: String, httpClient: HttpClient)
+(val databaseName: String, httpClient: HttpClient[Future])
 (override implicit protected val ec: ExecutionContext)
   extends InfluxDB(httpClient)
   with RetentionPolicyManagement

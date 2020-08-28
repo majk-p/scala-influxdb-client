@@ -2,7 +2,15 @@ package io.razem.influxdbclient
 
 import io.razem.influxdbclient.Parameter.Precision.Precision
 
+import cats.implicits._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
+
+
+import sttp.client._
+import sttp.client.okhttp.OkHttpFutureBackend
+
 
 object InfluxDB {
 
@@ -13,7 +21,8 @@ object InfluxDB {
               https: Boolean = false,
               httpConfig: HttpConfig = null)(implicit ec: ExecutionContext): InfluxDB =
   {
-    val httpClient = new HttpClient(host, port, https, username, password, httpConfig)
+    implicit val backend = OkHttpFutureBackend()
+    val httpClient = HttpClient.sttpInstance[Future](host, port, https, Option(username), Option(password))
     new InfluxDB(httpClient)
   }
 
@@ -23,7 +32,7 @@ object InfluxDB {
 }
 
 class InfluxDB protected[influxdbclient]
-(httpClient: HttpClient)
+(httpClient: HttpClient[Future])
 (implicit protected val ec: ExecutionContext)
   extends Object with UserManagement with AutoCloseable {
 
@@ -56,7 +65,11 @@ class InfluxDB protected[influxdbclient]
       .map(response => new QueryResult())
       .recover { case error: HttpException => throw new PingException("Error during ping", error)}
 
+  // Ugly, left for backwards compatibility
   def close(): Unit =
+    Await.ready(asyncClose(), 10.seconds)
+  
+  def asyncClose(): Future[Unit] = 
     httpClient.close()
 
   protected def buildQueryParameters(query: String, precision: Precision): Map[String, String] = {
@@ -67,7 +80,7 @@ class InfluxDB protected[influxdbclient]
       params
   }
 
-  protected[influxdbclient] def getHttpClient: HttpClient = httpClient
+  protected[influxdbclient] def getHttpClient: HttpClient[Future] = httpClient
 }
 
 class InfluxDBException protected[influxdbclient](str: String, throwable: Throwable) extends Exception(str, throwable)
